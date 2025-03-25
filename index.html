@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        #todo-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .todo-item.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+        #new-task {
+            width: 70%;
+            padding: 5px;
+            margin-right: 10px;
+        }
+        .delete-confirmation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Todo List</h1>
+    
+    <div>
+        <input type="text" id="new-task" placeholder="Enter a new task">
+        <button id="add-task-btn">Add Task</button>
+    </div>
+
+    <div id="todo-container"></div>
+
+    <script>
+        // Todo list data structure
+        let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+
+        // Get DOM elements
+        const newTaskInput = document.getElementById('new-task');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const todoContainer = document.getElementById('todo-container');
+
+        // Render todo list
+        function renderTodos() {
+            todoContainer.innerHTML = '';
+
+            todos.forEach(function(todo, index) {
+                const todoItem = document.createElement('div');
+                todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                todoItem.innerHTML = `
+                    <div>
+                        <input 
+                            type="checkbox" 
+                            ${todo.completed ? 'checked' : ''} 
+                            data-index="${index}"
+                            class="todo-checkbox"
+                        >
+                        <span>${todo.text}</span>
+                        <small>(${todo.date})</small>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="edit-btn" data-index="${index}">Edit</button>
+                        <button class="delete-btn" data-index="${index}">Delete</button>
+                    </div>
+                `;
+                todoContainer.appendChild(todoItem);
+            });
+
+            // Save to local storage
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // Add new task
+        function addTask() {
+            const taskText = newTaskInput.value.trim();
+            
+            if (taskText) {
+                todos.push({
+                    text: taskText,
+                    date: new Date().toLocaleString(),
+                    completed: false
+                });
+                newTaskInput.value = '';
+                renderTodos();
+            }
+        }
+
+        // Event delegation for dynamic elements
+        todoContainer.addEventListener('click', function(event) {
+            const target = event.target;
+            const index = target.getAttribute('data-index');
+
+            // Toggle completion
+            if (target.classList.contains('todo-checkbox')) {
+                todos[index].completed = target.checked;
+                renderTodos();
+            }
+
+            // Edit task
+            if (target.classList.contains('edit-btn')) {
+                const newText = prompt('Edit task:', todos[index].text);
+                if (newText !== null && newText.trim()) {
+                    todos[index].text = newText.trim();
+                    renderTodos();
+                }
+            }
+
+            // Delete task
+            if (target.classList.contains('delete-btn')) {
+                showDeleteConfirmation(index);
+            }
+        });
+
+        // Show delete confirmation
+        function showDeleteConfirmation(index) {
+            // Remove any existing confirmation
+            document.querySelector('.overlay')?.remove();
+            document.querySelector('.delete-confirmation')?.remove();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            
+            const confirmBox = document.createElement('div');
+            confirmBox.className = 'delete-confirmation';
+            confirmBox.innerHTML = `
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete this task?</p>
+                <button id="confirm-delete">Yes, Delete</button>
+                <button id="cancel-delete">Cancel</button>
+            `;
+
+            document.body.appendChild(overlay);
+            document.body.appendChild(confirmBox);
+
+            // Confirmation event listeners
+            document.getElementById('confirm-delete').addEventListener('click', function() {
+                todos.splice(index, 1);
+                renderTodos();
+                overlay.remove();
+                confirmBox.remove();
+            });
+
+            document.getElementById('cancel-delete').addEventListener('click', function() {
+                overlay.remove();
+                confirmBox.remove();
+            });
+        }
+
+        // Add task button event listener
+        addTaskBtn.addEventListener('click', addTask);
+
+        // Allow adding task by pressing Enter
+        newTaskInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initial render
+        renderTodos();
+    </script>
+</body>
+</html>
