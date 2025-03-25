@@ -3,51 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List Application</title>
+    <title>Organized Todo List</title>
     <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --personal-color: #6a5acd;
+            --work-color: #2ecc71;
+            --text-color: #2c3e50;
+            --accent-color: #3498db;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
         }
-        #todo-container {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-top: 20px;
+
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
         }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        #new-task {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #category-select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        #add-task-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #add-task-btn:hover {
+            background-color: #2980b9;
+        }
+
+        #todo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .category-column {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .personal .category-title {
+            background-color: var(--personal-color);
+            color: white;
+        }
+
+        .work .category-title {
+            background-color: var(--work-color);
+            color: white;
+        }
+
         .todo-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            border-bottom: 1px solid #eee;
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
+
         .todo-item.completed {
             text-decoration: line-through;
-            color: #888;
+            opacity: 0.6;
         }
+
         .todo-actions {
             display: flex;
             gap: 10px;
         }
-        #new-task {
-            width: 70%;
-            padding: 5px;
-            margin-right: 10px;
+
+        .todo-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
         }
+
+        .todo-actions button:hover {
+            opacity: 1;
+        }
+
         .delete-confirmation {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            border: 1px solid #ddd;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             z-index: 1000;
+            text-align: center;
         }
+
         .overlay {
             position: fixed;
             top: 0;
@@ -60,14 +158,29 @@
     </style>
 </head>
 <body>
-    <h1>Todo List</h1>
-    
-    <div>
-        <input type="text" id="new-task" placeholder="Enter a new task">
-        <button id="add-task-btn">Add Task</button>
-    </div>
+    <div class="container">
+        <h1>✨ Todo List Organizer</h1>
+        
+        <div class="input-section">
+            <input type="text" id="new-task" placeholder="Enter a new task">
+            <select id="category-select">
+                <option value="personal">Personal</option>
+                <option value="work">Work/Studies</option>
+            </select>
+            <button id="add-task-btn">Add Task</button>
+        </div>
 
-    <div id="todo-container"></div>
+        <div id="todo-container">
+            <div class="category-column personal">
+                <div class="category-title">Personal Activities</div>
+                <div id="personal-todos"></div>
+            </div>
+            <div class="category-column work">
+                <div class="category-title">Work/Studies</div>
+                <div id="work-todos"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Todo list data structure
@@ -75,12 +188,15 @@
 
         // Get DOM elements
         const newTaskInput = document.getElementById('new-task');
+        const categorySelect = document.getElementById('category-select');
         const addTaskBtn = document.getElementById('add-task-btn');
-        const todoContainer = document.getElementById('todo-container');
+        const personalTodosContainer = document.getElementById('personal-todos');
+        const workTodosContainer = document.getElementById('work-todos');
 
         // Render todo list
         function renderTodos() {
-            todoContainer.innerHTML = '';
+            personalTodosContainer.innerHTML = '';
+            workTodosContainer.innerHTML = '';
 
             todos.forEach(function(todo, index) {
                 const todoItem = document.createElement('div');
@@ -97,11 +213,17 @@
                         <small>(${todo.date})</small>
                     </div>
                     <div class="todo-actions">
-                        <button class="edit-btn" data-index="${index}">Edit</button>
-                        <button class="delete-btn" data-index="${index}">Delete</button>
+                        <button class="edit-btn" data-index="${index}">✏️</button>
+                        <button class="delete-btn" data-index="${index}">🗑️</button>
                     </div>
                 `;
-                todoContainer.appendChild(todoItem);
+
+                // Append to the correct category container
+                if (todo.category === 'personal') {
+                    personalTodosContainer.appendChild(todoItem);
+                } else {
+                    workTodosContainer.appendChild(todoItem);
+                }
             });
 
             // Save to local storage
@@ -111,12 +233,14 @@
         // Add new task
         function addTask() {
             const taskText = newTaskInput.value.trim();
+            const category = categorySelect.value;
             
             if (taskText) {
                 todos.push({
                     text: taskText,
                     date: new Date().toLocaleString(),
-                    completed: false
+                    completed: false,
+                    category: category
                 });
                 newTaskInput.value = '';
                 renderTodos();
@@ -124,7 +248,7 @@
         }
 
         // Event delegation for dynamic elements
-        todoContainer.addEventListener('click', function(event) {
+        document.getElementById('todo-container').addEventListener('click', function(event) {
             const target = event.target;
             const index = target.getAttribute('data-index');
 
@@ -163,8 +287,8 @@
             confirmBox.innerHTML = `
                 <h3>Confirm Deletion</h3>
                 <p>Are you sure you want to delete this task?</p>
-                <button id="confirm-delete">Yes, Delete</button>
-                <button id="cancel-delete">Cancel</button>
+                <button id="confirm-delete" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin-right: 10px;">Yes, Delete</button>
+                <button id="cancel-delete" style="background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 8px;">Cancel</button>
             `;
 
             document.body.appendChild(overlay);
