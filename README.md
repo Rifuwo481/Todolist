@@ -54,7 +54,7 @@ Here’s a preview of how the app looks:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/todo-list.git
+   git clone https://github.com/Rifuwo481/Todolist.git
 Navigate to the project directory:
 
 bash
