@@ -35,7 +35,7 @@ This app is designed to not only help you get things done but also to ensure you
 ## 🔗 Links
 
 - **Live Demo**: [View the live demo here](https://rifuwo481.github.io/Todolist/)
-- **GitHub Repository**: [Check out the code on GitHub](https://github.com/YOUR_USERNAME/todo-list)
+- **GitHub Repository**: [Check out the code on GitHub](https://github.com/Rifuwo481/Todolist)
 
 ## 📸 Screenshots
 
