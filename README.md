@@ -41,7 +41,7 @@ This app is designed to not only help you get things done but also to ensure you
 
 Here’s a preview of how the app looks:
 
-![To-Do List Screenshot](Screenshot(8).png) 
+![To-Do List Screenshot](Screenshot.png) 
 
 ## 🚀 How to Run the Project Locally
 
